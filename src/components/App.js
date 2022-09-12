@@ -31,12 +31,15 @@ class App extends Component {
     this.setState({ searchValue: e.target.value });
   };
   render() {
-    let filteredMovi = this.state.movies.filter((m) => {
-      return (
-        m.title.toLowerCase().indexOf(this.state.searchValue.toLowerCase()) !==
-        -1
-      );
-    });
+    let filteredMovi = this.state.movies
+      .filter((m) => {
+        return (
+          m.title
+            .toLowerCase()
+            .indexOf(this.state.searchValue.toLowerCase()) !== -1
+        );
+      })
+      .sort((a, b) => b.id - a.id);
     return (
       <div className="container-fluit bg-dark">
         <Row className="d-flex justify-content-center m-0">
