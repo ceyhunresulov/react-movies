@@ -14,7 +14,6 @@ export default class Movies extends Component {
     sizeAuth: true,
   };
   catString = () => {
-    console.log(this.props.movi.overview);
     return (this.props.movi.overview.length > 100) & this.state.sizeAuth
       ? this.props.movi.overview.substring(0, 100) + "..."
       : this.props.movi.overview;
