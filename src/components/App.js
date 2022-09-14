@@ -1,52 +1,120 @@
 import axios from "axios";
 import { Component } from "react";
 import { Row } from "reactstrap";
+import AppMovie from "./AddMovie";
 import MoviList from "./MoviList";
 import SearchBar from "./SearchBar";
+import EditMovie from "./EditMovie";
+import { Routes, Route, BrowserRouter } from "react-router-dom";
 
 class App extends Component {
   state = {
     movies: [],
     searchValue: "",
+    editId: null,
   };
 
+  // DID MOUNT
   componentDidMount() {
-    const baseUrl =
-      "https://api.themoviedb.org/3/list/8216847?api_key=10ba6c7149c9f1eede0338c72d8bc9d0&language=en-US";
-    axios
-      .get(baseUrl)
-      .then((res) => {
-        this.setState({ movies: res.data.items });
-      })
-      .catch((err) => err);
+    this.getMovies();
   }
+
+  // REMOVE
   removeCard = async (id) => {
-    const baseUrl = `https://api.themoviedb.org/3/list/8216847/remove_item?media_id=${id}&session_id=da8fe59a660de8fb85e882da8602509d850dd25b&api_key=10ba6c7149c9f1eede0338c72d8bc9d0`;
-    await axios.post(baseUrl);
+    const baseUrl = `http://localhost:3001/movies/${id}`;
+    await axios.delete(baseUrl);
     let newState = this.state.movies.filter((c) => c.id !== id);
     this.setState({ movies: newState });
   };
 
+  // SEACRH
   getSearchValue = (e) => {
     this.setState({ searchValue: e.target.value });
   };
+
+  // ADD MOVIE
+
+  addMovie = async (newMovie) => {
+    const baseUrl = "http://localhost:3001/movies";
+    await axios.post(baseUrl, newMovie);
+    this.setState((state) => ({
+      movies: state.movies.concat([newMovie]),
+    }));
+    this.getMovies();
+  };
+
+  // edit movie
+
+  editMovie = async (baseUrl, newMovie) => {
+    await axios.put(baseUrl, newMovie);
+    this.getMovies();
+  };
+
+  // get movie
+
+  getMovies = () => {
+    const baseUrl = "http://localhost:3001/movies";
+    axios
+      .get(baseUrl)
+      .then((res) => {
+        this.setState({ movies: res.data });
+      })
+      .catch((err) => err);
+  };
+
+  // get id
+  getId = (id) => {
+    this.setState({ editId: id });
+  };
+
   render() {
-    let filteredMovi = this.state.movies.filter((m) => {
-      return (
-        m.title.toLowerCase().indexOf(this.state.searchValue.toLowerCase()) !==
-        -1
-      );
-    });
+    let filteredMovi = this.state.movies
+      .filter((m) => {
+        return (
+          m.name.toLowerCase().indexOf(this.state.searchValue.toLowerCase()) !==
+          -1
+        );
+      })
+      .sort((a, b) => {
+        return b.id - a.id;
+      });
     return (
-      <div className="container-fluit bg-dark">
-        <Row className="d-flex justify-content-center m-0">
-          <SearchBar getSearchValue={this.getSearchValue}></SearchBar>
-        </Row>
-        <MoviList
-          removeCard={this.removeCard}
-          moviList={filteredMovi}
-        ></MoviList>
-      </div>
+      <BrowserRouter className="container-fluit bg-dark">
+        <Routes>
+          <Route
+            path="/"
+            exact
+            element={
+              <>
+                <Row className="d-flex justify-content-center m-0">
+                  <SearchBar getSearchValue={this.getSearchValue}></SearchBar>
+                </Row>
+                <MoviList
+                  getId={this.getId}
+                  removeCard={this.removeCard}
+                  moviList={filteredMovi}
+                ></MoviList>
+              </>
+            }
+          ></Route>
+          <Route
+            path="/add"
+            exact
+            element={<AppMovie addMovie={this.addMovie}></AppMovie>}
+          ></Route>
+          <Route
+            path="/edit/:id"
+            exact
+            element={
+              <EditMovie
+                editMovie={this.editMovie}
+                editId={this.state.editId}
+                addMovie={this.addMovie}
+              ></EditMovie>
+            }
+          ></Route>
+        </Routes>
+      </BrowserRouter>
     );
   }
 }
