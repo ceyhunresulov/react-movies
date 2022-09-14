@@ -78,6 +78,7 @@ class App extends Component {
       .sort((a, b) => {
         return b.id - a.id;
       });
+
     return (
       <BrowserRouter className="container-fluit bg-dark">
         <Routes>
